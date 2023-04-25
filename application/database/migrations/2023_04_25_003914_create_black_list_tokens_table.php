@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('blacklist_tokens', function (Blueprint $table) {
+        Schema::create('BlackListToken', function (Blueprint $table) {
             $table->id();
-            $table->string('token', '500');
+            $table->string('token', 500);
             $table->timestamps();
 
             $table->index('token');
+            $table->index('created_at');
         });
     }
 
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('blacklist_tokens');
+        Schema::dropIfExists('BlackListToken');
     }
 };

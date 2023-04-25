@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\BlackListToken;
 use App\Models\User;
 use App\Services\FirebaseJwtAuth;
 use Closure;
@@ -25,6 +26,11 @@ class FirebaseJwtMiddleware
         $decoded = $this->firebaseJwtAuth->verifyToken($token);
         if (!$decoded) {
             return response()->json(['error' => 'Token inválido'], 401);
+        }
+
+        $tokenInBlackList = BlackListToken::where('token', $token)->first();
+        if (!empty($tokenInBlackList)) {
+            return response()->json(['error' => 'Token está na BlackList'], 401);
         }
 
         // Adicione o utilizador autenticado ao objeto $request para uso posterior

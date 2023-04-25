@@ -24,5 +24,5 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware([FirebaseJwtMiddleware::class])->group(function () {
     Route::post('me', [AuthController::class, 'me']);
     Route::post('logout', [AuthController::class, 'logout']);
-    Route::post('refresh', [AuthController::class, 'refresh']);
+    /*Route::post('refresh', [AuthController::class, 'refresh']);*/
 });

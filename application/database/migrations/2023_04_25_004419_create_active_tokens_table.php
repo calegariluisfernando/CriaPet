@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tokens_ativos', function (Blueprint $table) {
+        Schema::create('ActiveToken', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->string('token', '500');
+            $table->string('token');
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users');
-            $table->unique(['user_id', 'token']);
+            $table->unique('user_id');
         });
     }
 
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tokens_ativo');
+        Schema::dropIfExists('ActiveToken');
     }
 };

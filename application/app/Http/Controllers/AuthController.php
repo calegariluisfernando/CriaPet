@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActiveToken;
+use App\Models\BlackListToken;
 use App\Models\User;
 use App\Services\FirebaseJwtAuth;
 use Illuminate\Http\Request;
@@ -34,6 +36,17 @@ class AuthController extends Controller
         // Crie um token JWT e retorne-o para o cliente
         $token = $this->firebaseJwtAuth->createToken($user);
 
+        // Remover da tabela de Tokens Ativos o Token do Usuario, medida de
+        // segurança caso o usuário realize login mais de uma vez.
+        $tokensDoUsuario = ActiveToken::where('user_id', $user->id)->first();
+        if (!empty($tokensDoUsuario)) {
+            BlackListToken::create(['token' => $tokensDoUsuario->token]);
+            $tokensDoUsuario->delete();
+        }
+
+        // Adicionar Token Gereado na tabela de Tokens ativos do Usuário.
+        ActiveToken::create(['user_id' => $user->id, 'token' => $token]);
+
         return response()->json(compact('token'));
     }
 
@@ -44,7 +57,15 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        Auth::logout();
+        $token = explode(' ', $request->header('Authorization'))[1];
+        $user = $request->user;
+
+        $tokensDoUsuario = ActiveToken::where('user_id', $user->id)->first();
+        if (!empty($tokensDoUsuario)) {
+            $tokensDoUsuario->delete();
+        }
+
+        BlackListToken::create(['token' => $token]);
 
         return response()->json(['message' => 'Logout efetuado com sucesso']);
     }
