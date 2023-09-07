@@ -1,45 +1,48 @@
 version: "3"
 services:
   application:
+    container_name: calega-pet-app
     build:
       args:
         user: ${SO_DOCKER_USER}
         uid: 1000
-      context: ${PWD}/docker-compose/application
+      context: ./docker-compose/application
     working_dir: /var/www
     volumes:
-      - ${PWD}/application:/var/www
+      - ./application:/var/www
     networks:
-      - rede
+      - calega-pet-network
 
   mysql:
+    container_name: calega-pet-db
     image: mysql
     command: --default-authentication-plugin=mysql_native_password
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: toor
-      MYSQL_DATABASE: petguard
+      MYSQL_DATABASE: calegapet
     volumes:
       - mysqlvolume:/var/lib/mysql
     networks:
-      - rede
+      - calega-pet-network
     ports:
       - "3306:3306"
 
   nginx:
+    container_name: calega-pet-nginx
     image: nginx:alpine
     restart: unless-stopped
     ports:
       - "8080:80"
     volumes:
-      - ${PWD}/application:/var/www
-      - ${PWD}/docker-compose/nginx/conf/:/etc/nginx/conf.d/
+      - ./application:/var/www
+      - ./docker-compose/nginx/conf/:/etc/nginx/conf.d/
     networks:
-      - rede
+      - calega-pet-network
 
 volumes:
   mysqlvolume:
 
 networks:
-  rede:
+  calega-pet-network:
     driver: bridge

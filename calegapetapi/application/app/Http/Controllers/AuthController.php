@@ -6,6 +6,7 @@ use App\Models\ActiveToken;
 use App\Models\BlackListToken;
 use App\Models\User;
 use App\Services\FirebaseJwtAuth;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -47,12 +48,12 @@ class AuthController extends Controller
         // Adicionar Token Gereado na tabela de Tokens ativos do Usuário.
         ActiveToken::create(['user_id' => $user->id, 'token' => $token]);
 
-        return response()->json(compact('token'));
+        return new JsonResponse(compact('token', 'user'), JsonResponse::HTTP_OK);
     }
 
     public function me(Request $request)
     {
-        return response()->json($request->user);
+        return new JsonResponse($request->user, JsonResponse::HTTP_OK);
     }
 
     public function logout(Request $request)
@@ -67,6 +68,6 @@ class AuthController extends Controller
 
         BlackListToken::create(['token' => $token]);
 
-        return response()->json(['message' => 'Logout efetuado com sucesso']);
+        return new JsonResponse(['message' => 'Logout efetuado com sucesso'], JsonResponse::HTTP_OK);
     }
 }
