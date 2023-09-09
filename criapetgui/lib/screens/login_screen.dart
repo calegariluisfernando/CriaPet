@@ -58,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'Calega-',
+                              'Cria',
                               style: TextStyle(
                                 fontFamily: GoogleFonts.cormorant().fontFamily,
                                 fontSize: 50,
