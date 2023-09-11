@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:petguardgui/screens/home_screen.dart';
+import 'package:provider/provider.dart';
 
 import '../my_default_settings.dart';
+import '../notifiers/user_notifier.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,17 +14,22 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
-
-  final Key _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   bool passwordIsVisible = false;
   void togglePasswordVisibility() =>
       setState(() => passwordIsVisible = !passwordIsVisible);
 
+  String serverSideErrorMsg = '';
+  setServerSideErrorMsg({required String message}) =>
+      setState(() => serverSideErrorMsg = message);
+
+  bool isLoading = false;
+  toggleIsLoading() => setState(() => isLoading = !isLoading);
+
   @override
   Widget build(BuildContext context) {
+    final UserNotifier userNotifier = Provider.of<UserNotifier>(context);
     return SafeArea(
       child: Scaffold(
         body: Center(
@@ -33,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const SizedBox(height: MyDefaultSettings.gutter),
+                    SizedBox(height: MyDefaultSettings.gutter),
                     Column(
                       children: [
                         Container(
@@ -79,7 +87,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: MyDefaultSettings.gutter),
                     TextFormField(
-                      controller: emailController,
                       decoration: const InputDecoration(
                         labelText: 'E-mail',
                         prefixIcon: Icon(Icons.email),
@@ -90,10 +97,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         }
                         return null;
                       },
+                      enabled: !isLoading,
+                      onChanged: (value) => userNotifier.user.email = value,
                     ),
                     const SizedBox(height: MyDefaultSettings.gutter),
                     TextFormField(
-                      controller: passwordController,
                       decoration: InputDecoration(
                         labelText: 'Senha',
                         prefixIcon: const Icon(Icons.lock),
@@ -106,6 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
+                      enabled: !isLoading,
                       obscureText: !passwordIsVisible,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -113,15 +122,46 @@ class _LoginScreenState extends State<LoginScreen> {
                         }
                         return null;
                       },
+                      onChanged: (value) => userNotifier.user.password = value,
                     ),
                     const SizedBox(height: MyDefaultSettings.gutter * 2),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: isLoading
+                          ? null
+                          : () async {
+                              toggleIsLoading();
+                              if (_formKey.currentState!.validate()) {
+                                bool successLogin = true;
+                                await userNotifier.login((String message) {
+                                  setServerSideErrorMsg(message: message);
+                                  successLogin = false;
+                                });
+
+                                if (successLogin) {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => HomeScreen(),
+                                    ),
+                                  );
+                                }
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Ops! Algo deu errado.',
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                );
+                              }
+                              toggleIsLoading();
+                            },
                       child: const Text('Entrar'),
                     ),
                     const SizedBox(height: MyDefaultSettings.gutter),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: isLoading ? null : () {},
                       child: const Text('Não tem uma conta? Registre-se'),
                     ),
                   ],

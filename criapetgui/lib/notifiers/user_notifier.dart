@@ -1,5 +1,9 @@
+import 'dart:convert';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
+import '../Services/maria_service.dart';
 import '../models/user.dart';
 
 class UserNotifier extends ChangeNotifier {
@@ -16,8 +20,30 @@ class UserNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> login(String email, String password) async {
-    print('login');
-    notifyListeners();
+  Future<void> login(Function(String message) onError) async {
+    try {
+      MariaService service = MariaService.instance;
+      var response = await service.dio.post(
+        '/auth/login',
+        data: jsonEncode({
+          'email': user.email,
+          'password': user.password,
+        }),
+      );
+
+      user.id = response.data['user']['id'];
+      user.uuid = response.data['user']['uuid'];
+      user.name = response.data['user']['name'];
+      user.apelido = response.data['user']['apelido'];
+      user.email = response.data['user']['email'];
+      user.photoUrl =
+          '${service.dio.options.baseUrl}/user/photo/${response.data['user']['id']}';
+      user.token = response.data['token'];
+
+      notifyListeners();
+    } on DioException catch (e) {
+      Map<String, dynamic> erro = e.response?.data;
+      onError(erro['error']);
+    }
   }
 }
