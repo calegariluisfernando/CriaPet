@@ -1,7 +1,7 @@
 version: "3"
 services:
   application:
-    container_name: calega-pet-app
+    container_name: criapet-app
     build:
       args:
         user: ${SO_DOCKER_USER}
@@ -11,25 +11,25 @@ services:
     volumes:
       - ./application:/var/www
     networks:
-      - calega-pet-network
+      - criapet-network
 
   mysql:
-    container_name: calega-pet-db
+    container_name: criapet-db
     image: mysql
     command: --default-authentication-plugin=mysql_native_password
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: toor
-      MYSQL_DATABASE: calegapet
+      MYSQL_DATABASE: criapet
     volumes:
       - mysqlvolume:/var/lib/mysql
     networks:
-      - calega-pet-network
+      - criapet-network
     ports:
       - "3306:3306"
 
   nginx:
-    container_name: calega-pet-nginx
+    container_name: criapet-nginx
     image: nginx:alpine
     restart: unless-stopped
     ports:
@@ -38,11 +38,11 @@ services:
       - ./application:/var/www
       - ./docker-compose/nginx/conf/:/etc/nginx/conf.d/
     networks:
-      - calega-pet-network
+      - criapet-network
 
 volumes:
   mysqlvolume:
 
 networks:
-  calega-pet-network:
+  criapet-network:
     driver: bridge

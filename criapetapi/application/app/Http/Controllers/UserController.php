@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\ErrorMessageService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rules\File;
 use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
@@ -15,15 +17,14 @@ class UserController extends Controller
      */
     public function index()
     {
-        return new JsonResponse(User::all());
-    }
+        $users = User::all()->map(function (User $user){
+            if (empty($user->apelido)) {
+                $user->apelido = explode(' ', $user->name)[0];
+            }
+            return $user;
+        });
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return new JsonResponse(['error' => 'Page not found'], JsonResponse::HTTP_NOT_FOUND);
+        return new JsonResponse($users);
     }
 
     /**
@@ -35,7 +36,11 @@ class UserController extends Controller
             $request->validate([
                 'name' =>'required|string|min:3|max:250',
                 'email' =>'required|email|max:250|unique:users',
+                'apelido' =>'string|min:3|max:45',
                 'password' =>'required|string|min:8',
+                'photo' => [
+                    File::types(['jpg', 'jpeg', 'png', 'gif'])->max(12 * 1024),
+                ],
             ]);
 
             $dados = [
@@ -64,7 +69,7 @@ class UserController extends Controller
         } catch (ValidationException $e) {
             return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_BAD_REQUEST);
         } catch (Exception $e) {
-            return new JsonResponse(['error' => 'Erro interno'], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['error' => ErrorMessageService::handleException($e)], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -80,32 +85,71 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(User $user)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
+        if (empty($user->apelido)) {
+            $user->apelido = explode(' ', $user->name)[0];
+        }
+        return new JsonResponse($user);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, User $user)
     {
-        //
+        try {
+            $request->validate([
+                'name' =>'string|min:3|max:250',
+                'apelido' =>'string|min:3|max:45',
+                'email' =>'email|max:250|unique:users',
+                'photo' => [
+                    File::types(['jpg', 'jpeg', 'png', 'gif'])->max(12 * 1024),
+                ],
+            ]);
+
+            if ($request->has('name')) {
+                $user->name = $request->input('name');
+            }
+
+            if ($request->has('apelido')) {
+                $user->apelido = $request->input('apelido');
+            }
+
+            if ($request->has('email')) {
+                $user->email = $request->input('email');
+            }
+
+            if ($request->hasFile('photo')) {
+                $file = $request->file('photo');
+                $originalFileName = $file->getClientOriginalName();
+
+                $extension      = pathinfo($originalFileName, PATHINFO_EXTENSION);
+                $basename       = bin2hex(random_bytes(8));
+                $newFilename    = date('U'). sprintf('%s.%0.8s', $basename, $extension);
+                $directory      = $this->getPathPhotoUpload('user_photo');
+
+                $file->storeAs($directory, $newFilename, 'private');
+
+                $user->photo = $newFilename;
+            }
+
+            $user->save();
+
+            return new JsonResponse($user);
+        } catch (ValidationException $e) {
+            return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_BAD_REQUEST);
+        } catch (Exception $e) {
+            return new JsonResponse(['error' => ErrorMessageService::handleException($e)], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(User $user)
     {
-        //
+        $user->delete();
+        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }
