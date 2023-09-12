@@ -34,7 +34,7 @@ class FirebaseJwtMiddleware
         }
 
         // Adicione o utilizador autenticado ao objeto $request para uso posterior
-        $request->user = User::find($decoded->sub);
+        $request->user = User::with('photo')->find($decoded->sub);
 
         return $next($request);
     }

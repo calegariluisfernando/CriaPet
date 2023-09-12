@@ -29,7 +29,7 @@ class AuthController extends Controller
         ]);
 
         // Encontre o usuário com as credenciais fornecidas
-        $user = User::where('email', $request->email)->first();
+        $user = User::with('photo')->where('email', $request->email)->first();
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['error' => 'Credenciais inválidas'], 401);
         }

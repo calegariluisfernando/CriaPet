@@ -24,7 +24,6 @@ class User extends Authenticatable
         'email',
         'password',
         'uuid',
-        'photo',
     ];
 
     /**
@@ -55,5 +54,10 @@ class User extends Authenticatable
             }
             $user->uuid = Uuid::uuid4();
         });
+    }
+
+    public function photo()
+    {
+        return $this->hasOne(UserPhoto::class);
     }
 }

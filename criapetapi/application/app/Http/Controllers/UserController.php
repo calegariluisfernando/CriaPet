@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\UserPhoto;
 use App\Services\ErrorMessageService;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -17,7 +18,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::all()->map(function (User $user){
+        $users = User::with('photo')->get()->map(function (User $user){
             if (empty($user->apelido)) {
                 $user->apelido = explode(' ', $user->name)[0];
             }
@@ -60,10 +61,14 @@ class UserController extends Controller
 
                 $file->storeAs($directory, $newFilename, 'private');
 
-                $dados['photo'] = $newFilename;
+                $dados['photo'] = $directory . DIRECTORY_SEPARATOR . $newFilename;
             }
 
             $user = User::create($dados);
+
+            if (!empty($dados['photo'])) {
+                $user->photo = UserPhoto::create(['user_id' => $user->id, 'url' => $dados['photo']]);
+            }
 
             return new JsonResponse($user, JsonResponse::HTTP_CREATED);
         } catch (ValidationException $e) {
@@ -90,6 +95,9 @@ class UserController extends Controller
         if (empty($user->apelido)) {
             $user->apelido = explode(' ', $user->name)[0];
         }
+
+        $user = User::with('photo')->find($user->id);
+
         return new JsonResponse($user);
     }
 
@@ -131,11 +139,14 @@ class UserController extends Controller
 
                 $file->storeAs($directory, $newFilename, 'private');
 
-                $user->photo = $newFilename;
+                $userPhoto = new UserPhoto();
+                $userPhoto->user_id = $user->id;
+                $userPhoto->url = $directory. DIRECTORY_SEPARATOR. $newFilename;
+                $userPhoto->save();
             }
 
             $user->save();
-
+            $user = User::with('photo')->find($user->id);
             return new JsonResponse($user);
         } catch (ValidationException $e) {
             return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_BAD_REQUEST);
@@ -151,5 +162,29 @@ class UserController extends Controller
     {
         $user->delete();
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    public function photo(User $user) {
+        try {
+            $photo = UserPhoto::where('user_id', $user->id)->get();
+            if ($photo->isEmpty()) {
+                abort(404);
+            }
+            $photo = $photo->first();
+
+            $pathToFile = realpath(storage_path('app/private') . $photo->url);
+            if (!file_exists($pathToFile)) {
+                abort(404);
+            }
+
+            $fileName = pathinfo($pathToFile, PATHINFO_BASENAME);
+
+            return response()->download($pathToFile, $fileName);
+        } catch (Exception $e) {
+            return new JsonResponse(
+                ['errors' => $e->getMessage()],
+                JsonResponse::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
     }
 }
