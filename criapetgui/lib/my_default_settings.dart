@@ -7,4 +7,5 @@ class MyDefaultSettings {
   // Colors
   static const Color logoColor = Color(0xFFF25C54);
   static const Color primaryColor = Color(0xFFF25C54);
+  static const Color primaryTextColor = Color(0xFF5f6368);
 }

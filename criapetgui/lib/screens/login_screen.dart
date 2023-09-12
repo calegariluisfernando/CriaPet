@@ -126,6 +126,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: MyDefaultSettings.gutter * 2),
                     ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: MyDefaultSettings.primaryColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            MyDefaultSettings.gutter / 4,
+                          ),
+                        ),
+                      ),
                       onPressed: isLoading
                           ? null
                           : () async {
@@ -157,7 +165,20 @@ class _LoginScreenState extends State<LoginScreen> {
                               }
                               toggleIsLoading();
                             },
-                      child: const Text('Entrar'),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Entrar',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          SizedBox(width: MyDefaultSettings.gutter / 4),
+                          Icon(
+                            Icons.login,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: MyDefaultSettings.gutter),
                     TextButton(

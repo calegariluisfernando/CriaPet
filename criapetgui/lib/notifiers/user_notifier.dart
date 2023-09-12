@@ -36,9 +36,11 @@ class UserNotifier extends ChangeNotifier {
       user.name = response.data['user']['name'];
       user.apelido = response.data['user']['apelido'];
       user.email = response.data['user']['email'];
-      user.photoUrl =
-          '${service.dio.options.baseUrl}/user/photo/${response.data['user']['id']}';
       user.token = response.data['token'];
+
+      user.photoUrl = response.data['user']['photo'] != null
+          ? '${service.dio.options.baseUrl}/user/photo/${response.data['user']['id']}'
+          : '';
 
       notifyListeners();
     } on DioException catch (e) {

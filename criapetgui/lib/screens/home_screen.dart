@@ -30,7 +30,7 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               children: [
                 HeaderInfo(
-                  onTap: () => Navigator.push(
+                  onTap: () => Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
                       builder: (context) => UserInfoScreen(),

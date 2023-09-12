@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'my_default_settings.dart';
 import 'notifiers/user_notifier.dart';
 import 'screens/login_screen.dart';
 
@@ -24,7 +25,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'CriaPet',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme:
+            ColorScheme.fromSeed(seedColor: MyDefaultSettings.primaryTextColor),
         useMaterial3: true,
       ),
       home: LoginScreen(),
