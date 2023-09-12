@@ -29,7 +29,7 @@ class AuthController extends Controller
         ]);
 
         // Encontre o usuário com as credenciais fornecidas
-        $user = User::where('email', $request->email)->first();
+        $user = User::with('photo')->where('email', $request->email)->first();
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['error' => 'Credenciais inválidas'], 401);
         }
@@ -48,12 +48,19 @@ class AuthController extends Controller
         // Adicionar Token Gereado na tabela de Tokens ativos do Usuário.
         ActiveToken::create(['user_id' => $user->id, 'token' => $token]);
 
+        if (empty($user->apelido)) {
+            $user->apelido = explode(' ', $user->name)[0];
+        }
         return new JsonResponse(compact('token', 'user'), JsonResponse::HTTP_OK);
     }
 
     public function me(Request $request)
     {
-        return new JsonResponse($request->user, JsonResponse::HTTP_OK);
+        $user = $request->user;
+        if (empty($user->apelido)) {
+            $user->apelido = explode(' ', $user->name)[0];
+        }
+        return new JsonResponse($user, JsonResponse::HTTP_OK);
     }
 
     public function logout(Request $request)

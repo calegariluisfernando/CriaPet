@@ -20,10 +20,10 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'apelido',
         'email',
         'password',
         'uuid',
-        'photo',
     ];
 
     /**
@@ -48,6 +48,16 @@ class User extends Authenticatable
     protected static function boot()
     {
         parent::boot();
-        static::creating(fn(User $user) => $user->uuid = Uuid::uuid4());
+        static::creating(function (User $user) {
+            if (empty($user->apelido)) {
+                $user->apelido = $user->name;
+            }
+            $user->uuid = Uuid::uuid4();
+        });
+    }
+
+    public function photo()
+    {
+        return $this->hasOne(UserPhoto::class);
     }
 }
