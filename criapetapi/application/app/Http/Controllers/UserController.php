@@ -8,6 +8,7 @@ use App\Services\ErrorMessageService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\File;
 use Illuminate\Validation\ValidationException;
 
@@ -109,8 +110,12 @@ class UserController extends Controller
         try {
             $request->validate([
                 'name' =>'string|min:3|max:250',
-                'apelido' =>'string|min:3|max:45',
-                'email' =>'email|max:250|unique:users',
+                'apelido' => 'string|min:3|max:45',
+                'email' => [
+                    'email',
+                    'max:250',
+                    Rule::unique('users')->ignore($user->id)
+                ],
                 'photo' => [
                     File::types(['jpg', 'jpeg', 'png', 'gif'])->max(12 * 1024),
                 ],

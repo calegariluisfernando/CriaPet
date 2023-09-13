@@ -32,9 +32,5 @@ Route::prefix('user')->middleware([FirebaseJwtMiddleware::class])->group(functio
     Route::get('{user}', [UserController::class, 'show']);
     Route::put('{user}', [UserController::class, 'update']);
     Route::delete('{user}', [UserController::class, 'destroy']);
-
-//    Route::get('/photo/{user}', [UserController::class, 'photo']);
-});
-Route::prefix('user')->group(function () {
     Route::get('/photo/{user}', [UserController::class, 'photo']);
 });
