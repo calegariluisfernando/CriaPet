@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:petguardgui/screens/user_info_screen.dart';
 
 import '../Widgets/header_info.dart';
 import '../my_default_settings.dart';
+import 'user_info_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -30,7 +30,7 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               children: [
                 HeaderInfo(
-                  onTap: () => Navigator.pushReplacement(
+                  onTapInfo: () => Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
                       builder: (context) => UserInfoScreen(),

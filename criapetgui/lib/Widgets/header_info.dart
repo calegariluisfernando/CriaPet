@@ -5,8 +5,9 @@ import '../my_default_settings.dart';
 import '../notifiers/user_notifier.dart';
 
 class HeaderInfo extends StatelessWidget {
-  final VoidCallback? onTap;
-  const HeaderInfo({super.key, this.onTap});
+  final VoidCallback? onTapInfo;
+  final VoidCallback? onTapNotifications;
+  const HeaderInfo({super.key, this.onTapInfo, this.onTapNotifications});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +30,7 @@ class HeaderInfo extends StatelessWidget {
               ),
             ),
             SizedBox(width: MyDefaultSettings.gutter / 4),
-            UserInfo(onTap: onTap),
+            UserInfo(onTap: onTapInfo),
           ],
         ),
         Icon(
@@ -57,6 +58,7 @@ class UserInfo extends StatelessWidget {
               'Olá, ${userNotifier.user.apelido}!',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
+                fontSize: MyDefaultSettings.gutter,
                 color: Colors.white,
               ),
             ),

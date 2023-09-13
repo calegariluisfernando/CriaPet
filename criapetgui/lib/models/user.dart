@@ -21,14 +21,27 @@ class User {
 
   factory User.fromMap(Map<String, dynamic> map) {
     return User(
-      id: map['id'] ? map['id'] : null,
-      uuid: map['uuid'] ? map['uuid'] : null,
-      name: map['name'] ? map['name'] : null,
-      apelido: map['apelido'] ? map['apelido'] : null,
-      email: map['email'] ? map['email'] : null,
-      password: map['password'] ? map['password'] : null,
-      photoUrl: map['photo_url'] ? map['photo_url'] : null,
-      token: map['token'] ? map['token'] : null,
+      id: map['id'] as int? ?? 0,
+      uuid: map['uuid'] as String? ?? '',
+      name: map['name'] as String? ?? '',
+      apelido: map['apelido'] as String? ?? '',
+      email: map['email'] as String? ?? '',
+      password: map['password'] as String? ?? '',
+      photoUrl: map['photo_url'] as String? ?? '',
+      token: map['token'] as String?,
     );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'uuid': uuid,
+      'name': name,
+      'apelido': apelido,
+      'email': email,
+      'password': password,
+      'photo_url': photoUrl,
+      'token': token,
+    };
   }
 }

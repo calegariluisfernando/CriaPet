@@ -9,6 +9,7 @@ class UserProfilePhoto extends StatelessWidget {
   final String? url;
   final String? token;
   final bool isLocalPhoto;
+
   const UserProfilePhoto({
     super.key,
     required this.size,
@@ -60,7 +61,7 @@ class UserProfilePhoto extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(100),
       child: url != null && url.isNotEmpty
-          ? isLocalPhoto
+          ? !isLocalPhoto
               ? Image.network(
                   url,
                   headers: token!.isNotEmpty

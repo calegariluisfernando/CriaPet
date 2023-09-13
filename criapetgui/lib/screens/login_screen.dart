@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:petguardgui/screens/home_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../my_default_settings.dart';
 import '../notifiers/user_notifier.dart';
+import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -146,6 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 });
 
                                 if (successLogin) {
+                                  setServerSideErrorMsg(message: '');
                                   Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
@@ -185,6 +186,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: isLoading ? null : () {},
                       child: const Text('Não tem uma conta? Registre-se'),
                     ),
+                    if (serverSideErrorMsg.isNotEmpty)
+                      Text(
+                        serverSideErrorMsg,
+                        style: TextStyle(color: Colors.red),
+                      ),
                   ],
                 ),
               ),
