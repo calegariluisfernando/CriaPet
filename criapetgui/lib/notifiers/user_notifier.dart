@@ -3,11 +3,18 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
-import '../Services/maria_service.dart';
 import '../models/user.dart';
+import '../services/maria_service.dart';
 
 class UserNotifier extends ChangeNotifier {
   User _user = User();
+  bool _localPhoto = false;
+
+  bool get localPhoto => _localPhoto;
+  set localPhoto(bool value) {
+    _localPhoto = value;
+    notifyListeners();
+  }
 
   User get user => _user;
   set user(User value) {

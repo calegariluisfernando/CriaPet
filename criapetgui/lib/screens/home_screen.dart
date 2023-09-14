@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../Widgets/header_info.dart';
 import '../my_default_settings.dart';
+import '../widgets/header_info.dart';
 import 'user_info_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -30,7 +30,7 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               children: [
                 HeaderInfo(
-                  onTapInfo: () => Navigator.pushReplacement(
+                  onTapInfo: () => Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => UserInfoScreen(),

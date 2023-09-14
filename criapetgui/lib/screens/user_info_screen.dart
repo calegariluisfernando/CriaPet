@@ -1,14 +1,16 @@
-import 'dart:convert';
+import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:petguardgui/Services/maria_service.dart';
-import 'package:petguardgui/Widgets/user_profile_photo.dart';
-import 'package:petguardgui/notifiers/user_notifier.dart';
 import 'package:provider/provider.dart';
 
-import '../Widgets/header_info.dart';
 import '../models/user.dart';
 import '../my_default_settings.dart';
+import '../notifiers/user_notifier.dart';
+import '../services/maria_service.dart';
+import '../widgets/camera_preview.dart';
+import '../widgets/header_info.dart';
+import '../widgets/user_profile_photo.dart';
 
 class UserInfoScreen extends StatefulWidget {
   const UserInfoScreen({super.key});
@@ -23,6 +25,13 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
   late TextEditingController txtApelido = TextEditingController();
   late TextEditingController txtEmail = TextEditingController();
 
+  bool isSaving = false;
+  void toggleIsSaving() {
+    setState(() {
+      isSaving = !isSaving;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -35,13 +44,6 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
     txtEmail.text = userNotifier.user.email!;
   }
 
-  bool isSaving = false;
-  void toggleIsSaving() {
-    setState(() {
-      isSaving = !isSaving;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -49,41 +51,14 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
         appBar: AppBar(
           backgroundColor: MyDefaultSettings.primaryColor,
           title: const HeaderInfo(),
+          automaticallyImplyLeading: false,
         ),
         body: Consumer<UserNotifier>(
           builder: (context, UserNotifier userNotifier, child) {
             return SingleChildScrollView(
               child: Column(
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          MyDefaultSettings.primaryColor,
-                          Colors.white,
-                        ],
-                        stops: [.5, .5],
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        SizedBox(height: MyDefaultSettings.gutter),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            UserProfilePhoto(
-                              size: 100,
-                              url: userNotifier.user.photoUrl,
-                              token: userNotifier.user.token,
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: MyDefaultSettings.gutter),
-                      ],
-                    ),
-                  ),
+                  HeaderPhoto(),
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: MyDefaultSettings.gutter,
@@ -137,7 +112,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                             ),
                             onPressed: isSaving
                                 ? null
-                                : () {
+                                : () async {
                                     if (_formKey.currentState!.validate()) {
                                       toggleIsSaving();
 
@@ -150,31 +125,75 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                                               ? txtNome.text.split(' ')[0]
                                               : txtApelido.text;
 
+                                      Map<String, dynamic> data = {
+                                        'name': txtNome.text,
+                                        'apelido': txtApelido.text,
+                                        'email': txtEmail.text,
+                                      };
+
+                                      if (userNotifier.localPhoto) {
+
+                                        String filePath =
+                                            userNotifier.user.photoUrl ?? '';
+
+                                        File file = File(filePath);
+                                        String fileName =
+                                            file.path.split('/').last;
+
+                                        data['photo'] =
+                                            await MultipartFile.fromFile(
+                                          filePath,
+                                          filename: fileName,
+                                        );
+                                      }
+
                                       MariaService ms = MariaService.instance;
-                                      ms.dio.post(
-                                        '/user/${userNotifier.user.id}?_method=PUT',
-                                        data: jsonEncode({
-                                          'name': userNotifier.user.name,
-                                          'apelido': userNotifier.user.apelido,
-                                          'email': userNotifier.user.email,
-                                        }),
-                                      );
+                                      final FormData formData =
+                                          FormData.fromMap(data);
 
-                                      userNotifier.user = User.fromMap(
-                                        userNotifier.user.toMap(),
-                                      );
+                                      try {
+                                        var response = await ms.dio.post(
+                                          '/user/${userNotifier.user.id}?_method=PUT',
+                                          data: formData,
+                                        );
 
-                                      toggleIsSaving();
+                                        var user = User.fromMap(response.data);
+                                        userNotifier.user.name = user.name;
+                                        userNotifier.user.email = user.email;
+                                        userNotifier.user.apelido = user.apelido;
 
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            'Dados salvos com sucesso',
-                                            textAlign: TextAlign.center,
+                                        userNotifier.notifyListeners();
+                                        toggleIsSaving();
+
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Dados salvos com sucesso',
+                                              textAlign: TextAlign.center,
+                                            ),
                                           ),
-                                        ),
-                                      );
+                                        );
+                                      } on DioException catch (e) {
+                                        late String msg;
+                                        if (e.response != null) {
+                                          Map<String, dynamic> erro =
+                                              e.response?.data;
+                                          msg = erro['error'];
+                                        } else {
+                                          msg = 'Erro Desconhecido';
+                                        }
+
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              msg,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                        );
+                                      }
                                     } else {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
@@ -222,6 +241,80 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+class HeaderPhoto extends StatelessWidget {
+  const HeaderPhoto({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<UserNotifier>(
+      builder: (context, userNotifier, child) => Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              MyDefaultSettings.primaryColor,
+              Colors.white,
+            ],
+            stops: [.5, .5],
+          ),
+        ),
+        child: Column(
+          children: [
+            SizedBox(height: MyDefaultSettings.gutter),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    UserProfilePhoto(
+                      size: 100,
+                      url: userNotifier.user.photoUrl,
+                      token: userNotifier.user.token,
+                      isLocalPhoto: userNotifier.localPhoto,
+                    ),
+                    InkWell(
+                      onTap: () async {
+                        String? filePath = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MyCameraPreview(),
+                          ),
+                        );
+
+                        if (filePath != null) {
+                          userNotifier.user.photoUrl = filePath;
+                          userNotifier.localPhoto = true;
+                        }
+                      },
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          border: Border.all(width: 1, color: Colors.white),
+                          borderRadius: BorderRadius.all(Radius.circular(50)),
+                          color: MyDefaultSettings.primaryColor.withOpacity(.8),
+                        ),
+                        child: Icon(
+                          Icons.camera_alt_outlined,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            SizedBox(height: MyDefaultSettings.gutter),
+          ],
         ),
       ),
     );

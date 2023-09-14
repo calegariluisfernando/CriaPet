@@ -35,12 +35,12 @@ class UserProfilePhoto extends StatelessWidget {
     required bool isLocalPhoto,
   }) {
     return Container(
-      padding: EdgeInsets.all(MyDefaultSettings.gutter / 4),
+      padding: EdgeInsets.all(MyDefaultSettings.gutter / 6),
       width: size,
       height: size,
       decoration: BoxDecoration(
         border: Border.all(width: 1, color: Colors.white),
-        borderRadius: BorderRadius.all(Radius.circular(100)),
+        borderRadius: BorderRadius.all(Radius.circular(50)),
         color: Colors.grey[300],
       ),
       child: image(
