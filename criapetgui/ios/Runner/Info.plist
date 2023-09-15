@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Para configurar sua foto de perfil, precisamos acessar a câmera para que você possa tirar uma foto diretamente do aplicativo.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>O microfone é necessário para permitir que você capture áudio enquanto tira uma foto para sua foto de perfil. Isso facilitará a criação do seu perfil.</string>
 </dict>
 </plist>

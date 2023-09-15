@@ -3,11 +3,18 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
-import '../Services/maria_service.dart';
 import '../models/user.dart';
+import '../services/maria_service.dart';
 
 class UserNotifier extends ChangeNotifier {
   User _user = User();
+  bool _localPhoto = false;
+
+  bool get localPhoto => _localPhoto;
+  set localPhoto(bool value) {
+    _localPhoto = value;
+    notifyListeners();
+  }
 
   User get user => _user;
   set user(User value) {
@@ -31,16 +38,24 @@ class UserNotifier extends ChangeNotifier {
         }),
       );
 
-      user.id = response.data['user']['id'];
-      user.uuid = response.data['user']['uuid'];
-      user.name = response.data['user']['name'];
-      user.apelido = response.data['user']['apelido'];
-      user.email = response.data['user']['email'];
-      user.token = response.data['token'];
+      String? t = user.password;
+      user = User.fromMap({
+        'id': response.data['user']['id'],
+        'uuid': response.data['user']['uuid'],
+        'name': response.data['user']['name'],
+        'apelido': response.data['user']['apelido'],
+        'email': response.data['user']['email'],
+        'token': response.data['token'],
+        'photo_url': response.data['user']['photo'] != null
+            ? '${service.dio.options.baseUrl}/user/photo/${response.data['user']['id']}'
+            : '',
+      });
 
-      user.photoUrl = response.data['user']['photo'] != null
-          ? '${service.dio.options.baseUrl}/user/photo/${response.data['user']['id']}'
-          : '';
+      user.apelido = user.apelido!.isEmpty ? user.name : user.apelido;
+      user.password = t;
+
+      MariaService.instance
+          .addHeaderDefaults({'Authorization': 'Bearer ${user.token}'});
 
       notifyListeners();
     } on DioException catch (e) {
