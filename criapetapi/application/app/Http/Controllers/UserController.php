@@ -175,6 +175,7 @@ class UserController extends Controller
 
     public function photo(User $user) {
         try {
+
             $photo = UserPhoto::where('user_id', $user->id)->get();
             if ($photo->isEmpty()) {
                 abort(404);
