@@ -24,6 +24,7 @@ class UserNotifier extends ChangeNotifier {
 
   void clear() {
     _user = User();
+    _localPhoto = false;
     notifyListeners();
   }
 

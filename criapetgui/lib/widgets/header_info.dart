@@ -7,6 +7,7 @@ import '../notifiers/user_notifier.dart';
 class HeaderInfo extends StatelessWidget {
   final VoidCallback? onTapInfo;
   final VoidCallback? onTapNotifications;
+
   const HeaderInfo({super.key, this.onTapInfo, this.onTapNotifications});
 
   @override
@@ -44,44 +45,51 @@ class HeaderInfo extends StatelessWidget {
 
 class UserInfo extends StatelessWidget {
   final VoidCallback? onTap;
+
   const UserInfo({super.key, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Consumer<UserNotifier>(
-      builder: (context, userNotifier, child) => InkWell(
-        onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Olá, ${userNotifier.user.apelido}!',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: MyDefaultSettings.gutter,
-                color: Colors.white,
-              ),
-            ),
-            Row(
-              children: [
-                Text(
-                  'Minha Conta',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: MyDefaultSettings.gutter / 1.5,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-                Icon(
-                  Icons.expand_more,
+      builder: (context, userNotifier, child) {
+        String userText = userNotifier.user.apelido != null
+            ? 'Olá, ${userNotifier.user.apelido}!'
+            : 'Olá';
+
+        return InkWell(
+          onTap: onTap,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                userText,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: MyDefaultSettings.gutter,
                   color: Colors.white,
-                  size: 14,
-                )
-              ],
-            ),
-          ],
-        ),
-      ),
+                ),
+              ),
+              Row(
+                children: [
+                  Text(
+                    'Minha Conta',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: MyDefaultSettings.gutter / 1.5,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                  Icon(
+                    Icons.expand_more,
+                    color: Colors.white,
+                    size: 14,
+                  )
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

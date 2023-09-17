@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../my_default_settings.dart';
 import '../notifiers/user_notifier.dart';
 import 'home_screen.dart';
+import 'user_info_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,14 +18,17 @@ class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   bool passwordIsVisible = false;
+
   void togglePasswordVisibility() =>
       setState(() => passwordIsVisible = !passwordIsVisible);
 
   String serverSideErrorMsg = '';
+
   setServerSideErrorMsg({required String message}) =>
       setState(() => serverSideErrorMsg = message);
 
   bool isLoading = false;
+
   toggleIsLoading() => setState(() => isLoading = !isLoading);
 
   @override
@@ -183,7 +187,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: MyDefaultSettings.gutter),
                     TextButton(
-                      onPressed: isLoading ? null : () {},
+                      onPressed: isLoading
+                          ? null
+                          : () {
+                              userNotifier.clear();
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => UserInfoScreen(
+                                    isNewUser: true,
+                                  ),
+                                ),
+                              );
+                            },
                       child: const Text('Não tem uma conta? Registre-se'),
                     ),
                     if (serverSideErrorMsg.isNotEmpty)
