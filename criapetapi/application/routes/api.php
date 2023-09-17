@@ -26,11 +26,13 @@ Route::prefix('auth')->group(function () {
 });
 
 
-Route::prefix('user')->middleware([FirebaseJwtMiddleware::class])->group(function () {
-    Route::get('', [UserController::class, 'index']);
+Route::prefix('user')->group(function () {
     Route::post('', [UserController::class, 'store']);
-    Route::get('{user}', [UserController::class, 'show']);
-    Route::put('{user}', [UserController::class, 'update']);
-    Route::delete('{user}', [UserController::class, 'destroy']);
-    Route::get('/photo/{user}', [UserController::class, 'photo']);
+    Route::middleware([FirebaseJwtMiddleware::class])->group(function () {
+        Route::get('', [UserController::class, 'index']);
+        Route::get('{user}', [UserController::class, 'show']);
+        Route::put('{user}', [UserController::class, 'update']);
+        Route::delete('{user}', [UserController::class, 'destroy']);
+        Route::get('/photo/{user}', [UserController::class, 'photo']);
+    });
 });

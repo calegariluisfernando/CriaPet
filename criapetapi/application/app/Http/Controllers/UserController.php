@@ -144,10 +144,14 @@ class UserController extends Controller
 
                 $file->storeAs($directory, $newFilename, 'private');
 
-                $userPhoto = new UserPhoto();
-                $userPhoto->user_id = $user->id;
-                $userPhoto->url = $directory. DIRECTORY_SEPARATOR. $newFilename;
-                $userPhoto->save();
+
+                $userPhoto = UserPhoto::where('user_id', $user->id)->first();
+                if (!empty($userPhoto)) {
+                    $userPhoto->url = $directory. DIRECTORY_SEPARATOR. $newFilename;
+                    $userPhoto->save();
+                } else {
+                    UserPhoto::create(['user_id' => $user->id, 'url' => $directory. DIRECTORY_SEPARATOR. $newFilename]);
+                }
             }
 
             $user->save();
@@ -171,6 +175,7 @@ class UserController extends Controller
 
     public function photo(User $user) {
         try {
+
             $photo = UserPhoto::where('user_id', $user->id)->get();
             if ($photo->isEmpty()) {
                 abort(404);
@@ -184,7 +189,8 @@ class UserController extends Controller
 
             $fileName = pathinfo($pathToFile, PATHINFO_BASENAME);
 
-            return response()->download($pathToFile, $fileName);
+
+            return response()->download($pathToFile, $fileName, ['Cache-Control' => 'no-cache, no-store, must-revalidate']);
         } catch (Exception $e) {
             return new JsonResponse(
                 ['errors' => $e->getMessage()],
