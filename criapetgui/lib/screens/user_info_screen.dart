@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -101,12 +102,13 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
           data: formData,
         );
 
-        var user = User.fromMap(response.data);
-        userNotifier.user.name = user.name;
-        userNotifier.user.email = user.email;
-        userNotifier.user.apelido = user.apelido;
+        User user = userNotifier.user;
 
-        userNotifier.notifyListeners();
+        user.name = response.data['name'];
+        user.email = response.data['email'];
+        user.apelido = response.data['apelido'];
+
+        userNotifier.user = user;
         toggleIsSaving();
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -149,7 +151,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
 
   _salvarNovoUsuario() async {
     UserNotifier userNotifier =
-      Provider.of<UserNotifier>(context, listen: false);
+        Provider.of<UserNotifier>(context, listen: false);
 
     if (_formKey.currentState!.validate()) {
       toggleIsSaving();

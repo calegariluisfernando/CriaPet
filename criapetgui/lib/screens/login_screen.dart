@@ -16,20 +16,32 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController _passwordController = TextEditingController();
 
   bool passwordIsVisible = false;
 
-  void togglePasswordVisibility() =>
-      setState(() => passwordIsVisible = !passwordIsVisible);
+  void togglePasswordVisibility() => setState(() => passwordIsVisible = !passwordIsVisible);
 
   String serverSideErrorMsg = '';
 
-  setServerSideErrorMsg({required String message}) =>
-      setState(() => serverSideErrorMsg = message);
+  setServerSideErrorMsg({required String message}) => setState(() => serverSideErrorMsg = message);
 
   bool isLoading = false;
 
   toggleIsLoading() => setState(() => isLoading = !isLoading);
+
+  @override
+  void initState() {
+    super.initState();
+
+    _emailController.text = 'luis@criapet.com.br';
+    _passwordController.text = '123';
+
+    UserNotifier userNotifier = Provider.of<UserNotifier>(context, listen: false);
+    userNotifier.user.email = 'luis@criapet.com.br';
+    userNotifier.user.password = '123';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(height: MyDefaultSettings.gutter),
+                    const SizedBox(height: MyDefaultSettings.gutter),
                     Column(
                       children: [
                         Container(
@@ -54,10 +66,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           decoration: const BoxDecoration(
                             color: MyDefaultSettings.logoColor,
                             borderRadius: BorderRadius.only(
-                              topLeft:
-                                  Radius.circular(MyDefaultSettings.gutter),
-                              bottomRight:
-                                  Radius.circular(MyDefaultSettings.gutter),
+                              topLeft: Radius.circular(MyDefaultSettings.gutter),
+                              bottomRight: Radius.circular(MyDefaultSettings.gutter),
                             ),
                           ),
                           child: const Icon(
@@ -102,6 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         return null;
                       },
                       enabled: !isLoading,
+                      controller: _emailController,
                       onChanged: (value) => userNotifier.user.email = value,
                     ),
                     const SizedBox(height: MyDefaultSettings.gutter),
@@ -126,6 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         }
                         return null;
                       },
+                      controller: _passwordController,
                       onChanged: (value) => userNotifier.user.password = value,
                     ),
                     const SizedBox(height: MyDefaultSettings.gutter * 2),
@@ -193,11 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               userNotifier.clear();
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(
-                                  builder: (context) => UserInfoScreen(
-                                    isNewUser: true,
-                                  ),
-                                ),
+                                MaterialPageRoute(builder: (context) => const UserInfoScreen(isNewUser: true)),
                               );
                             },
                       child: const Text('Não tem uma conta? Registre-se'),
@@ -205,7 +213,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     if (serverSideErrorMsg.isNotEmpty)
                       Text(
                         serverSideErrorMsg,
-                        style: TextStyle(color: Colors.red),
+                        style: const TextStyle(color: Colors.red),
                       ),
                   ],
                 ),

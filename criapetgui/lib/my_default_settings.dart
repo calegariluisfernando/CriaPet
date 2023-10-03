@@ -2,6 +2,7 @@ import 'dart:ui';
 
 class MyDefaultSettings {
   static const String apiUrl = 'http://192.168.5.117:8080/api';
+  static const String baseUrl = 'http://192.168.5.117:8080';
   static const double gutter = 16;
 
   // Colors
