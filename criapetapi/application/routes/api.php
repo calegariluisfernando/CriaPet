@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AnimalController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\FirebaseJwtMiddleware;
@@ -34,5 +35,11 @@ Route::prefix('user')->group(function () {
         Route::put('{user}', [UserController::class, 'update']);
         Route::delete('{user}', [UserController::class, 'destroy']);
         Route::get('/photo/{user}', [UserController::class, 'photo']);
+    });
+});
+
+Route::prefix('animal')->group(function () {
+    Route::middleware([FirebaseJwtMiddleware::class])->group(function () {
+        Route::get('', [AnimalController::class, 'index']);
     });
 });

@@ -49,8 +49,12 @@ class User extends Authenticatable
     {
         parent::boot();
         static::creating(function (User $user) {
+
+            $user->name = trim($user->name);
+            $user->apelido = trim($user->apelido);
+
             if (empty($user->apelido)) {
-                $user->apelido = $user->name;
+                $user->apelido = explode(' ', $user->name)[0];
             }
             $user->uuid = Uuid::uuid4();
         });
@@ -59,5 +63,11 @@ class User extends Authenticatable
     public function photo()
     {
         return $this->hasOne(UserPhoto::class);
+    }
+
+    public function animais()
+    {
+        return $this->belongsToMany(Animal::class, 'UserAnimal', 'user_id', 'animal_id')
+            ->withPivot(['isDono', 'created_at', 'updated_at']);
     }
 }
