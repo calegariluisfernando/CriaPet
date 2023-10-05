@@ -8,6 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class Especie extends Model
 {
     use HasFactory;
+
     protected $table = 'Especie';
-    protected $fillable = ['nome'];
+    protected $fillable = ['name'];
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(fn(Especie $especie) => $especie->name = trim($especie->name));
+    }
 }
