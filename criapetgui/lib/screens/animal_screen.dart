@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/especie.dart';
+import '../models/raca.dart';
 import '../my_default_settings.dart';
 import '../services/maria_service.dart';
 import '../widgets/camera_preview.dart';
@@ -17,36 +18,91 @@ class AnimalScreen extends StatefulWidget {
 
 class _AnimalScreenState extends State<AnimalScreen> {
   final _formKey = GlobalKey<FormState>();
+
   List<Especie> especies = [];
-  int? _dropdownValue;
+  int _dropdownValueEspecie = 1;
+
+  List<Raca> racas = [];
+  int? _dropdownValueRacas;
 
   @override
   void initState() {
     super.initState();
     obterEspecies();
+    obterRacas(_dropdownValueEspecie);
   }
 
   obterEspecies() async {
     MariaService ms = MariaService.instance;
+
     var response = await ms.dio.get('/especie');
-    Map<String, dynamic> responseData = response.data;
     List<Especie> dataEspecies = [];
-
-    responseData
-        .forEach((key, value) => dataEspecies.add(Especie.fromMap(value)));
-
+    response.data.forEach((element) => dataEspecies.add(Especie.fromMap(element)));
     setState(() {
       especies = dataEspecies;
-      _dropdownValue = especies.first.id;
+      _dropdownValueEspecie = especies.first.id!;
     });
   }
 
-  void dropdownCallback(int? selectedValue) {
+  void dropdownCallbackEspecies(int? selectedValue) {
     if (selectedValue is int) {
       setState(() {
-        _dropdownValue = selectedValue;
+        _dropdownValueEspecie = selectedValue;
       });
     }
+
+    obterRacas(_dropdownValueEspecie);
+  }
+
+  obterRacas(int especie) async {
+    MariaService ms = MariaService.instance;
+
+    var response = await ms.dio.get('/raca', queryParameters: {'especie_id': especie});
+    List<Raca> dataRacas = [];
+    response.data.forEach((element) => dataRacas.add(Raca.fromMap(element)));
+    setState(() {
+      racas = dataRacas;
+      _dropdownValueRacas = racas.first.id;
+    });
+  }
+
+  void dropdownCallbackRacas(int? selectedValue) {
+    if (selectedValue is int) {
+      setState(() {
+        _dropdownValueRacas = selectedValue;
+      });
+    }
+  }
+
+  DateTime? _selectedDate;
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      cancelText: 'Fechar',
+      helpText: 'Data de Nascimento',
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
+  TextFormField buildDateOfBirthFormField() {
+    return TextFormField(
+      readOnly: true,
+      onTap: () => _selectDate(context),
+      decoration: const InputDecoration(
+        labelText: 'Data Nascimento',
+      ),
+      controller: TextEditingController(
+        text: _selectedDate == null ? '' : "${_selectedDate!.toLocal()}".split(' ')[0],
+      ),
+    );
   }
 
   @override
@@ -79,9 +135,9 @@ class _AnimalScreenState extends State<AnimalScreen> {
                     children: [
                       DropdownButtonFormField<int>(
                         decoration: const InputDecoration(labelText: 'Espécie'),
-                        value: _dropdownValue,
+                        value: _dropdownValueEspecie,
                         items: especies.isNotEmpty ? especies.map((Especie e) => DropdownMenuItem<int>(value: e.id, child: Text(e.name),)).toList() : null,
-                        onChanged: dropdownCallback,
+                        onChanged: dropdownCallbackEspecies,
                         isExpanded: true,
                         validator: (value) {
                           if (value == null || value <= 0) {
@@ -101,21 +157,29 @@ class _AnimalScreenState extends State<AnimalScreen> {
                         },
                       ),
                       SizedBox(height: MyDefaultSettings.gutter),
-                      TextFormField(
+                      DropdownButtonFormField<int>(
                         decoration: const InputDecoration(labelText: 'Raça'),
+                        value: _dropdownValueRacas,
+                        items: racas.isNotEmpty ? racas.map((Raca e) => DropdownMenuItem<int>(value: e.id, child: Text(e.name),)).toList() : null,
+                        onChanged: dropdownCallbackRacas,
+                        isExpanded: true,
+                        validator: (value) {
+                          if (value == null || value <= 0) {
+                            return 'O campo raça é obrigatório';
+                          }
+                          return null;
+                        },
                       ),
                       SizedBox(height: MyDefaultSettings.gutter),
                       TextFormField(
                         decoration: const InputDecoration(labelText: 'Peso'),
                         keyboardType: TextInputType.numberWithOptions(
-                            signed: true, decimal: true),
+                          signed: true,
+                          decimal: true,
+                        ),
                       ),
                       SizedBox(height: MyDefaultSettings.gutter),
-                      TextFormField(
-                        decoration:
-                            const InputDecoration(labelText: 'Data Nascimento'),
-                        keyboardType: TextInputType.datetime,
-                      ),
+                      buildDateOfBirthFormField(),
                     ],
                   ),
                 ),
