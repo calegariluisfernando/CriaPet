@@ -18,5 +18,11 @@ class UserSeeder extends Seeder
             'email' => 'luis@criapet.com.br',
             'password' => Hash::make('123'),
         ]);
+
+        User::create([
+            'name' => 'Maria Luiza',
+            'email' => 'maria@criapet.com.br',
+            'password' => Hash::make('123'),
+        ]);
     }
 }

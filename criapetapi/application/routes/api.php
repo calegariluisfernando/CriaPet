@@ -3,6 +3,7 @@
 use App\Http\Controllers\AnimalController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EspecieController;
+use App\Http\Controllers\RacaController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\FirebaseJwtMiddleware;
 use Illuminate\Support\Facades\Route;
@@ -46,4 +47,9 @@ Route::prefix('animal')->middleware([FirebaseJwtMiddleware::class])->group(funct
 Route::prefix('especie')->middleware([FirebaseJwtMiddleware::class])->group(function () {
     Route::get('', [EspecieController::class, 'index']);
     Route::post('', [EspecieController::class, 'store']);
+});
+
+Route::prefix('raca')->middleware([FirebaseJwtMiddleware::class])->group(function () {
+    Route::get('', [RacaController::class, 'index']);
+    Route::post('', [RacaController::class, 'store']);
 });

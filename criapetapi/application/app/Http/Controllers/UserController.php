@@ -189,7 +189,6 @@ class UserController extends Controller
 
             $fileName = pathinfo($pathToFile, PATHINFO_BASENAME);
 
-
             return response()->download($pathToFile, $fileName, ['Cache-Control' => 'no-cache, no-store, must-revalidate']);
         } catch (Exception $e) {
             return new JsonResponse(
