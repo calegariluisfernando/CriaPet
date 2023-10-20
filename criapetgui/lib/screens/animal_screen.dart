@@ -19,6 +19,11 @@ class AnimalScreen extends StatefulWidget {
 class _AnimalScreenState extends State<AnimalScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  bool isSaving = false;
+  void toggleIsSaving () {
+    setState(() => isSaving = !isSaving);
+  }
+
   List<Especie> especies = [];
   int _dropdownValueEspecie = 1;
 
@@ -180,6 +185,49 @@ class _AnimalScreenState extends State<AnimalScreen> {
                       ),
                       SizedBox(height: MyDefaultSettings.gutter),
                       buildDateOfBirthFormField(),
+                      SizedBox(height: MyDefaultSettings.gutter),
+                      ElevatedButton(
+                        onPressed: isSaving ? null : () { toggleIsSaving(); },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: MyDefaultSettings.primaryColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              MyDefaultSettings.gutter / 4,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'Salvar',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            const SizedBox(width: MyDefaultSettings.gutter / 4),
+                            if (!isSaving)
+                              const Icon(
+                                Icons.save,
+                                color: Colors.white,
+                              ),
+
+                            if(isSaving)
+                                const Row(
+                                  children: [
+                                    SizedBox(
+                                        width: MyDefaultSettings.gutter / 4),
+                                    SizedBox(
+                                      width: MyDefaultSettings.gutter,
+                                      height: MyDefaultSettings.gutter,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 1,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),

@@ -4,8 +4,10 @@ class Raca {
 
   Raca({this.id, required this.name});
 
-  factory Raca.fromMap(Map<String, dynamic> map) => Raca(
-    id: map['id'] as int? ?? 0,
-    name: map['nome'] as String? ?? '',
-  );
+  factory Raca.fromMap(Map<String, dynamic> map) {
+    return Raca(
+      id: map['id'] as int? ?? 0,
+      name: map['nome'] as String? ?? '',
+    );
+  }
 }
