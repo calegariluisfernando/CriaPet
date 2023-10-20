@@ -17,7 +17,8 @@ class EspecieController extends Controller
         return new JsonResponse($especies);
     }
 
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
         try {
             $request->validate(['name' =>'required|string|min:3|max:250',]);
             $especie = Especie::create($request->all());

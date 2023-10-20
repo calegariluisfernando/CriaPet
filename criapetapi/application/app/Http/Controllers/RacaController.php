@@ -18,12 +18,13 @@ class RacaController extends Controller
             $racas->where('especie_id', $request->get('especie_id'));
         }
 
-        $racas = $racas->get()->sortBy('name');
+        $racas = $racas->get()->sortBy('nome')->values();
 
         return new JsonResponse($racas);
     }
 
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
         try {
             $request->validate([
                 'nome' =>'required|string|min:3|max:100',

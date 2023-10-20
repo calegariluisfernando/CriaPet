@@ -79,7 +79,8 @@ class UserController extends Controller
         }
     }
 
-    private function getPathPhotoUpload(string $p) : string {
+    private function getPathPhotoUpload(string $p) : string
+    {
         $path = DIRECTORY_SEPARATOR . $p;
         $path .= DIRECTORY_SEPARATOR . date('Y');
         $path .= DIRECTORY_SEPARATOR . date('m');
@@ -173,7 +174,8 @@ class UserController extends Controller
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
-    public function photo(User $user) {
+    public function photo(User $user)
+    {
         try {
 
             $photo = UserPhoto::where('user_id', $user->id)->get();
