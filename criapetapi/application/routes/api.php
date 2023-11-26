@@ -29,7 +29,7 @@ Route::prefix('auth')->group(function () {
 });
 
 
-Route::prefix('user')->group(function () {
+Route::prefix('users')->group(function () {
     Route::post('', [UserController::class, 'store']);
     Route::middleware([FirebaseJwtMiddleware::class])->group(function () {
         Route::get('', [UserController::class, 'index']);

@@ -8,9 +8,11 @@ use App\Services\ErrorMessageService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\File;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
 {
@@ -38,7 +40,6 @@ class UserController extends Controller
             $request->validate([
                 'name' =>'required|string|min:3|max:250',
                 'email' =>'required|email|max:250|unique:users',
-                'apelido' =>'string|min:3|max:45',
                 'password' =>'required|string|min:8',
                 'photo' => [
                     File::types(['jpg', 'jpeg', 'png', 'gif'])->max(12 * 1024),
@@ -48,7 +49,7 @@ class UserController extends Controller
             $dados = [
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => $request->password,
+                'password' => Hash::make($request->password),
             ];
 
             if ($request->hasFile('photo')) {
@@ -71,11 +72,11 @@ class UserController extends Controller
                 $user->photo = UserPhoto::create(['user_id' => $user->id, 'url' => $dados['photo']]);
             }
 
-            return new JsonResponse($user, JsonResponse::HTTP_CREATED);
+            return new JsonResponse($user, Response::HTTP_CREATED);
         } catch (ValidationException $e) {
-            return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_BAD_REQUEST);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         } catch (Exception $e) {
-            return new JsonResponse(['error' => ErrorMessageService::handleException($e)], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => ErrorMessageService::handleException($e)], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
