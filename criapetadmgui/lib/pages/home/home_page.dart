@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../providers/auth_provider.dart';
 import '../../providers/user_provider.dart';
 
 class HomePage extends StatelessWidget {
@@ -21,9 +22,25 @@ class HomePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(context.read<UserProvider>().user.name),
+            const SizedBox(height: 10),
+            const Text('Users'),
             IconButton(
               onPressed: () => GoRouter.of(context).go('/users'),
               icon: const Icon(Icons.person),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                context.read<AuthProvider>().unregisterToken();
+              },
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Sair'),
+                  SizedBox(width: 10),
+                  Icon(Icons.logout),
+                ],
+              ),
             ),
           ],
         ),

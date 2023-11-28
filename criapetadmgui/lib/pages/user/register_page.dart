@@ -130,6 +130,7 @@ class _MainLoginState extends State<MainLogin> {
   final TextEditingController _passwordContoller = TextEditingController();
   bool _termCondition = false;
   bool _isVisible = false;
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -166,6 +167,7 @@ class _MainLoginState extends State<MainLogin> {
                 TextFormField(
                   decoration: const InputDecoration(labelText: 'Nome'),
                   keyboardType: TextInputType.text,
+                  enabled: !_isLoading,
                   controller: _nameContoller,
                   validator: (value) => value == null || value.isEmpty
                       ? 'O campo nome é obrigatório'
@@ -176,6 +178,7 @@ class _MainLoginState extends State<MainLogin> {
                 // Email
                 TextFormField(
                   decoration: const InputDecoration(labelText: 'Email'),
+                  enabled: !_isLoading,
                   keyboardType: TextInputType.emailAddress,
                   controller: _emailContoller,
                   validator: (value) => value == null || value.isEmpty
@@ -199,6 +202,7 @@ class _MainLoginState extends State<MainLogin> {
                     ),
                   ),
                   keyboardType: TextInputType.visiblePassword,
+                  enabled: !_isLoading,
                   obscureText: !_isVisible,
                   controller: _passwordContoller,
                   validator: (value) => value == null || value.isEmpty
@@ -214,20 +218,25 @@ class _MainLoginState extends State<MainLogin> {
                     Checkbox(
                       value: _termCondition,
                       fillColor: MaterialStateProperty.resolveWith(
-                        (states) => !_termCondition ? Colors.white : blueColor,
+                        (states) => _isLoading
+                            ? Colors.grey
+                            : !_termCondition
+                                ? Colors.white
+                                : blueColor,
                       ),
-                      onChanged: (value) => setState(
-                        () => _termCondition = !_termCondition,
-                      ),
+                      onChanged: _isLoading
+                          ? null
+                          : (value) =>
+                              setState(() => _termCondition = !_termCondition),
                     ),
                     const Text(
                       'Eu concordo com os ',
                       style: TextStyle(fontSize: 14),
                     ),
-                    const Text(
+                    Text(
                       'Termos e condições',
                       style: TextStyle(
-                        color: blueColor,
+                        color: _isLoading ? inactiveTextColor : blueColor,
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                       ),
@@ -238,89 +247,119 @@ class _MainLoginState extends State<MainLogin> {
 
                 // Gravar
                 InkWell(
-                  onTap: () async {
-                    String mensagemErro = "Ops! Algo deu errado.";
-                    bool isValid = false;
+                  onTap: _isLoading
+                      ? null
+                      : () async {
+                          setState(() => _isLoading = !_isLoading);
+                          String mensagemErro = "Ops! Algo deu errado.";
+                          bool isValid = false;
 
-                    if (_formKey.currentState!.validate()) {
-                      if (!_termCondition) {
-                        mensagemErro = "Aceite os termos para continuar.";
-                      } else {
-                        VMLHttpService service = VMLHttpService.instance;
+                          if (_formKey.currentState!.validate()) {
+                            if (!_termCondition) {
+                              mensagemErro = "Aceite os termos para continuar.";
+                            } else {
+                              VMLHttpService service = VMLHttpService.instance;
 
-                        try {
-                          await service.dio.post(
-                            '/users',
-                            data: {
-                              "name": _nameContoller.text,
-                              "email": _emailContoller.text,
-                              "password": _passwordContoller.text,
-                            },
-                          );
-                          isValid = true;
-                        } on DioException catch (e) {
-                          if (e.response != null) {
-                            mensagemErro = e.response?.data['message'];
+                              try {
+                                await service.dio.post(
+                                  '/users',
+                                  data: {
+                                    "name": _nameContoller.text,
+                                    "email": _emailContoller.text,
+                                    "password": _passwordContoller.text,
+                                  },
+                                );
+                                isValid = true;
+                              } on DioException catch (e) {
+                                if (e.response != null) {
+                                  mensagemErro = e.response?.data['message'];
+                                }
+                              }
+                            }
+
+                            if (!isValid) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    mensagemErro,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                  backgroundColor: redColor,
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Usuário cadastrado com sucesso!',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+
+                              GoRouter.of(context).go('/login');
+                            }
                           }
-                        }
-                      }
 
-                      if (!isValid) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              mensagemErro,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                            backgroundColor: redColor,
-                          ),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Usuário cadastrado com sucesso!',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-
-                        GoRouter.of(context).go('/login');
-                      }
-                    }
-                  },
+                          setState(() => _isLoading = !_isLoading);
+                        },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       vertical: (defaultSpacing / 1.2),
                     ),
-                    decoration: const BoxDecoration(
-                      color: Color(0xfff7fafc),
-                      borderRadius: BorderRadius.all(
+                    decoration: BoxDecoration(
+                      color: const Color(0xfff7fafc),
+                      borderRadius: const BorderRadius.all(
                         Radius.circular(defaultSpacing / 2),
                       ),
                       gradient: LinearGradient(
                         begin: Alignment.topRight,
                         end: Alignment.bottomLeft,
-                        colors: [
-                          Color(0xFF49A3F1),
-                          Color(0xFF1A73E8),
-                        ],
+                        colors: !_isLoading
+                            ? [
+                                const Color(0xFF49A3F1),
+                                const Color(0xFF1A73E8),
+                              ]
+                            : [
+                                const Color.fromRGBO(167, 169, 171, 1),
+                                inactiveTextColor,
+                              ],
                       ),
                     ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    child: Stack(
                       children: [
-                        Text(
-                          'Registrar',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Registrar',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
+                        if (_isLoading)
+                          const Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.only(right: defaultSpacing),
+                                child: SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator.adaptive(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                       ],
                     ),
                   ),
@@ -334,13 +373,11 @@ class _MainLoginState extends State<MainLogin> {
                     const Text('Já tem uma conta?'),
                     const SizedBox(width: 5),
                     InkWell(
-                      onTap: () {
-                        context.go('/login');
-                      },
-                      child: const Text(
+                      onTap: _isLoading ? null : () => context.go('/login'),
+                      child: Text(
                         'Entrar',
                         style: TextStyle(
-                          color: defaultFucusedBorderColor,
+                          color: _isLoading ? inactiveTextColor : blueColor,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

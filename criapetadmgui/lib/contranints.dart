@@ -7,6 +7,8 @@ const defaultBackgroundColor = Color(0xfff0f2f5);
 const blueColor = Color(0xFF1a73e8);
 const redColor = Colors.red;
 
+const inactiveTextColor = Color.fromARGB(255, 123, 124, 124);
+
 // Input Border
 const defaultBorderColor = Color(0xFFd2d6da);
 const defaultFucusedBorderColor = blueColor;

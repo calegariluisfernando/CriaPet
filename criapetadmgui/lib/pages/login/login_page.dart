@@ -1,9 +1,9 @@
-import 'package:criapet_adm/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../contranints.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/user_provider.dart';
 
 const double defaultMaxWidth = 540.0;
@@ -131,6 +131,8 @@ class _MainLoginState extends State<MainLogin> {
 
   bool _isVisible = false;
 
+  bool _isLoading = false;
+
   @override
   Widget build(BuildContext context) {
     final UserProvider userProvider = Provider.of<UserProvider>(
@@ -192,6 +194,7 @@ class _MainLoginState extends State<MainLogin> {
                     labelText: 'Email',
                     prefixIcon: Icon(Icons.email_outlined, color: Colors.black),
                   ),
+                  enabled: !_isLoading,
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) => value == null || value.isEmpty
                       ? 'O campo e-mail é obrigatório'
@@ -220,6 +223,7 @@ class _MainLoginState extends State<MainLogin> {
                       ),
                     ),
                   ),
+                  enabled: !_isLoading,
                   obscureText: !_isVisible,
                   keyboardType: TextInputType.text,
                   validator: (value) => value == null || value.isEmpty
@@ -236,11 +240,13 @@ class _MainLoginState extends State<MainLogin> {
                   children: [
                     Switch.adaptive(
                       activeColor: Colors.white,
-                      activeTrackColor: Colors.black,
+                      activeTrackColor: _isLoading ? Colors.grey : Colors.black,
                       inactiveTrackColor: Colors.grey,
                       inactiveThumbColor: Colors.white,
                       value: _rememberMe,
-                      onChanged: (value) => setState(() => _rememberMe = value),
+                      onChanged: _isLoading
+                          ? null
+                          : (value) => setState(() => _rememberMe = value),
                     ),
                     const SizedBox(width: defaultSpacing / 2),
                     const Text('Lembrar me'),
@@ -250,76 +256,106 @@ class _MainLoginState extends State<MainLogin> {
 
                 // Entrar
                 InkWell(
-                  onTap: () async {
-                    String mensagemErro = "Ops! Algo deu errado.";
-                    bool isValid = false;
-                    Map<String, dynamic> login = {'token': ''};
+                  onTap: _isLoading
+                      ? null
+                      : () async {
+                          setState(() => _isLoading = !_isLoading);
+                          String mensagemErro = "Ops! Algo deu errado.";
+                          bool isValid = false;
+                          Map<String, dynamic> login = {'token': ''};
 
-                    if (_formKey.currentState!.validate()) {
-                      login = await userProvider.login();
-                      if (login.containsKey('error') && login['error'] > 0) {
-                        mensagemErro = login['message'];
-                      } else {
-                        isValid = true;
-                      }
-                    }
+                          if (_formKey.currentState!.validate()) {
+                            login = await userProvider.login();
+                            if (login.containsKey('error') &&
+                                login['error'] > 0) {
+                              mensagemErro = login['message'];
+                            } else {
+                              isValid = true;
+                            }
+                          }
 
-                    if (isValid) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            "Entrando...",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
+                          if (isValid) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "Entrando...",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
 
-                      authProvider.registerToken(login['token']);
-                      GoRouter.of(context).go('/');
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            mensagemErro,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                          backgroundColor: redColor,
-                        ),
-                      );
-                    }
-                  },
+                            authProvider.registerToken(login['token']);
+                            GoRouter.of(context).go('/');
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  mensagemErro,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                                backgroundColor: redColor,
+                              ),
+                            );
+                          }
+
+                          setState(() => _isLoading = !_isLoading);
+                        },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       vertical: (defaultSpacing / 1.2),
                     ),
-                    decoration: const BoxDecoration(
-                      color: Color(0xfff7fafc),
+                    decoration: BoxDecoration(
+                      color: const Color(0xfff7fafc),
                       borderRadius: BorderRadius.all(
                         Radius.circular(defaultSpacing / 2),
                       ),
                       gradient: LinearGradient(
                         begin: Alignment.topRight,
                         end: Alignment.bottomLeft,
-                        colors: [
-                          Color(0xFF49A3F1),
-                          Color(0xFF1A73E8),
-                        ],
+                        colors: !_isLoading
+                            ? [
+                                const Color(0xFF49A3F1),
+                                const Color(0xFF1A73E8),
+                              ]
+                            : [
+                                const Color.fromRGBO(167, 169, 171, 1),
+                                inactiveTextColor,
+                              ],
                       ),
                     ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    child: Stack(
                       children: [
-                        Text(
-                          'Entrar',
-                          style: TextStyle(
-                            color: Colors.white,
-                            //fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Entrar',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
+                        if (_isLoading)
+                          const Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.only(right: defaultSpacing),
+                                child: SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator.adaptive(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                       ],
                     ),
                   ),
@@ -333,13 +369,15 @@ class _MainLoginState extends State<MainLogin> {
                     const Text('Não tem uma conta?'),
                     const SizedBox(width: 5),
                     InkWell(
-                      onTap: () {
-                        context.go('/users/register');
-                      },
-                      child: const Text(
+                      onTap: _isLoading
+                          ? null
+                          : () => context.go('/users/register'),
+                      child: Text(
                         'Cadastre-se',
                         style: TextStyle(
-                          color: defaultFucusedBorderColor,
+                          color: _isLoading
+                              ? const Color.fromARGB(255, 123, 124, 124)
+                              : defaultFucusedBorderColor,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
