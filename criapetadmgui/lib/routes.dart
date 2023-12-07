@@ -1,10 +1,10 @@
-import 'package:criapet_adm/pages/user/register_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'pages/home/home_page.dart';
 import 'pages/login/login_page.dart';
+import 'pages/user/register_page.dart';
 import 'pages/user/user_page.dart';
 import 'providers/auth_provider.dart';
 
@@ -38,7 +38,9 @@ class MinhaRotas {
       routes: [
         GoRoute(
           path: '/',
-          builder: (context, state) => const HomePage(),
+          builder: (context, state) {
+            return const HomePage();
+          },
         ),
         GoRoute(
           path: '/login',
@@ -46,7 +48,9 @@ class MinhaRotas {
         ),
         GoRoute(
           path: '/users',
-          builder: (context, state) => const UserPage(),
+          builder: (context, state) {
+            return const UserPage();
+          },
         ),
         GoRoute(
           path: '/users/register',

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../contranints.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/user_provider.dart';
+import '../../services/vml_http_service.dart';
 
 const double defaultMaxWidth = 540.0;
 
@@ -287,6 +288,8 @@ class _MainLoginState extends State<MainLogin> {
                             );
 
                             authProvider.registerToken(login['token']);
+                            VMLHttpService.instance
+                                .addHeaderToken(login['token']);
                             GoRouter.of(context).go('/');
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(

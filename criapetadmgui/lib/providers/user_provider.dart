@@ -33,8 +33,12 @@ class UserProvider extends ChangeNotifier {
       return jsonDecode(
           '{"message": "success", "token": "${response.data['token']}"}');
     } on DioException catch (e) {
-      return jsonDecode(
-          '{"error": 1,"message": "${e.response?.data['message']}"}');
+      String errorMessage = "Ops! Erro inesperado";
+
+      if (e.response != null) {
+        errorMessage = e.response?.data['message'];
+      }
+      return jsonDecode('{"error": 1,"message": "$errorMessage"}');
     }
   }
 }

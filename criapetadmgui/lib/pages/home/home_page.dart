@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../providers/auth_provider.dart';
 import '../../providers/user_provider.dart';
+import '../../widgets/main_menu/list_menu.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -11,6 +10,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const MenuDrawer(),
       appBar: AppBar(
         title: const Text('Home'),
         actions: [
@@ -20,29 +20,7 @@ class HomePage extends StatelessWidget {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(context.read<UserProvider>().user.name),
-            const SizedBox(height: 10),
-            const Text('Users'),
-            IconButton(
-              onPressed: () => GoRouter.of(context).go('/users'),
-              icon: const Icon(Icons.person),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                context.read<AuthProvider>().unregisterToken();
-              },
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('Sair'),
-                  SizedBox(width: 10),
-                  Icon(Icons.logout),
-                ],
-              ),
-            ),
-          ],
+          children: [Text(context.read<UserProvider>().user.name)],
         ),
       ),
     );

@@ -5,6 +5,8 @@ class User {
   String email;
   String password;
   String? avatar;
+  DateTime? createdAt;
+  DateTime? updatedAt;
 
   User({
     this.id,
@@ -13,6 +15,8 @@ class User {
     this.apelido = '',
     this.password = '',
     this.avatar,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -24,6 +28,14 @@ class User {
     user.id = json['id'] ??= 0;
     user.apelido = json['apelido'] ??= '';
     user.password = json['password'] ??= '';
+
+    user.createdAt = json['created_at'].toString().isNotEmpty
+        ? DateTime.parse(json['created_at'])
+        : DateTime.now();
+
+    user.updatedAt = json['updated_at'].toString().isNotEmpty
+        ? DateTime.parse(json['updated_at'])
+        : DateTime.now();
 
     return user;
   }
